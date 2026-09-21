@@ -17,9 +17,9 @@ export const RevenueSection: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const copyTableData = () => {
-    const header = "Order ID\tSource File\tRaw Total In Payload\tUnit Convention\tInterpreted USD\tStatus\tNotes\n";
+    const header = "Order ID\tCustomer\tEmail\tStatus\tSubtotal\tTax\tShipping\tRaw Total\tUnit Convention\tReconciled USD\n";
     const rows = ORDERS_DATA.map(o => 
-      `${o.id}\t${o.sourceFile}\t${o.rawTotal}\t${o.rawUnitFormat}\t$${o.calculatedTotalUSD.toFixed(2)}\t${o.status}\t${o.notes || ''}`
+      `${o.id}\t${o.customerName}\t${o.customerEmail || 'null'}\t${o.status}\t${o.rawSubtotal}\t${o.rawTax}\t${o.rawShipping}\t${o.rawTotal}\t${o.rawUnitFormat}\t$${o.calculatedTotalUSD.toFixed(2)}`
     ).join('\n');
     const full = `${header}${rows}\n\nTotal Revenue: $${TOTAL_REVENUE.toFixed(2)}`;
     navigator.clipboard.writeText(full);
@@ -155,10 +155,12 @@ export const RevenueSection: React.FC = () => {
               <thead className="bg-slate-50 text-slate-700 font-semibold text-xs uppercase tracking-wider">
                 <tr>
                   <th scope="col" className="py-3.5 pl-4 pr-3 sm:pl-6">Order ID</th>
-                  <th scope="col" className="px-3 py-3.5">Source Payload</th>
                   <th scope="col" className="px-3 py-3.5">Customer</th>
                   <th scope="col" className="px-3 py-3.5">Status</th>
-                  <th scope="col" className="px-3 py-3.5">Raw Total In API</th>
+                  <th scope="col" className="px-3 py-3.5 text-right">Subtotal</th>
+                  <th scope="col" className="px-3 py-3.5 text-right">Tax</th>
+                  <th scope="col" className="px-3 py-3.5 text-right">Shipping</th>
+                  <th scope="col" className="px-3 py-3.5 text-right">Raw Total</th>
                   <th scope="col" className="px-3 py-3.5">Unit Convention</th>
                   <th scope="col" className="px-3 py-3.5 text-right pr-4 sm:pr-6">Reconciled USD</th>
                 </tr>
@@ -181,11 +183,9 @@ export const RevenueSection: React.FC = () => {
                             </span>
                           )}
                         </div>
-                      </td>
-
-                      {/* Source */}
-                      <td className="px-3 py-3.5 font-mono text-xs text-slate-500">
-                        {order.sourceFile}
+                        <span className="text-[11px] font-mono text-slate-400 block font-normal">
+                          {order.sourceFile}
+                        </span>
                       </td>
 
                       {/* Customer */}
@@ -224,8 +224,23 @@ export const RevenueSection: React.FC = () => {
                         )}
                       </td>
 
+                      {/* Subtotal */}
+                      <td className="px-3 py-3.5 font-mono text-xs text-right text-slate-700">
+                        {order.rawSubtotal}
+                      </td>
+
+                      {/* Tax */}
+                      <td className="px-3 py-3.5 font-mono text-xs text-right text-slate-700">
+                        {order.rawTax}
+                      </td>
+
+                      {/* Shipping */}
+                      <td className="px-3 py-3.5 font-mono text-xs text-right text-slate-700">
+                        {order.rawShipping}
+                      </td>
+
                       {/* Raw Total */}
-                      <td className="px-3 py-3.5 font-mono font-semibold text-slate-800 text-xs">
+                      <td className="px-3 py-3.5 font-mono font-semibold text-slate-800 text-xs text-right">
                         <code>{order.rawTotal}</code>
                       </td>
 
@@ -252,7 +267,7 @@ export const RevenueSection: React.FC = () => {
               </tbody>
               <tfoot className="bg-slate-100/80 font-semibold border-t-2 border-slate-300">
                 <tr>
-                  <td colSpan={6} className="py-4 pl-4 pr-3 sm:pl-6 text-sm font-bold text-slate-900 text-right">
+                  <td colSpan={8} className="py-4 pl-4 pr-3 sm:pl-6 text-sm font-bold text-slate-900 text-right">
                     Calculated Total Revenue:
                   </td>
                   <td className="py-4 px-3 pr-4 sm:pr-6 text-right font-mono text-base sm:text-lg font-black text-emerald-800">

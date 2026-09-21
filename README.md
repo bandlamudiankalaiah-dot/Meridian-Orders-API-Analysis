@@ -1,120 +1,92 @@
-# Meridian Orders API — Product Analyst Take-Home Assignment
+# Meridian Orders API — Product Analyst Assignment
 
-**Candidate:** Ankalaiah  
-**Role:** Product Analyst Intern  
-**Project:** Take-Home Case Study & API Contract Audit  
-**Ticket Reference:** TICKET-4502 / ENG-8912  
+**Candidate:** Ankalaiah | **Role:** Product Analyst Intern | **Reference:** TICKET-4502  
 
----
-
-## 📌 Project Disclaimer & Context
-
-> **IMPORTANT:** This is **NOT** a real API project. Meridian is a fictional company and the API is not live. This application is a professional one-page presentation of the candidate's analysis and take-home assignment submission based strictly on captured API responses provided for evaluation (`orders_page1.json`, `orders_page2.json`, and `order_ord_9999.json`). No fabricated API calls or synthetic data have been added.
+> **Note:** Meridian is a fictional company. Technical instructions are in [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ---
 
-## 📋 Executive Overview of Tasks
+## Task 1 — API Analysis & Discrepancies
 
-### Task 1 — API Contract Analysis
-Identified 5 critical discrepancies between the documented API specification and actual response payloads:
-1. **Undocumented Status:** `orders_page1.json` contains `ord_1003` with `status = "refunded"`, which is missing from the documented enum (`pending`, `shipped`, `delivered`, `cancelled`). *(Impact: High)*
-2. **Customer Email Nullability:** `orders_page2.json` contains `ord_1005` with `customer.email = null` and `customer.name = "Guest"`, violating the contract stating `customer.email` is always present. *(Impact: High)*
-3. **Inconsistent Monetary Units (Most Serious Issue):** `orders_page2.json` contains `ord_1006` with decimal dollar floats (`subtotal: 44.0`, `tax: 3.63`, `shipping: 5.99`, `total: 53.62`) instead of integer smallest-unit values (cents) used across all other orders (e.g., `ord_1001 total: 5470`). *(Impact: Critical/High)*
-4. **Pagination Inconsistency:** `orders_page1.json` returns `has_more = false` alongside an active `next_cursor = "cur_8f2a19bd"`. Following `has_more` causes clients to prematurely terminate pagination and miss subsequent orders. *(Impact: Medium)*
-5. **Non-Existent Order Returns HTTP 200:** Request for missing order `ord_9999` returns HTTP 200 OK with `{"order": null}` instead of the documented HTTP 404 Not Found, leading to false-positive success handling in client applications. *(Impact: High)*
+Audit of captured response files (`orders_page1.json`, `orders_page2.json`, `order_ord_9999.json`) against documentation:
 
----
-
-### Task 2 — Revenue Reconciliation
-Summary of all six captured orders:
-
-| Order ID | Source File | Raw API Total | Format Convention | Reconciled USD |
-| :--- | :--- | :--- | :--- | :--- |
-| **ord_1001** | `orders_page1.json` | `5470` | Integer (cents) | **$54.70** |
-| **ord_1002** | `orders_page1.json` | `2381` | Integer (cents) | **$23.81** |
-| **ord_1003** | `orders_page1.json` | `10233` | Integer (cents) | **$102.33** |
-| **ord_1004** | `orders_page2.json` | `6810` | Integer (cents) | **$68.10** |
-| **ord_1005** | `orders_page2.json` | `2547` | Integer (cents) | **$25.47** |
-| **ord_1006** | `orders_page2.json` | `53.62` | Decimal (dollars) | **$53.62** |
-| **TOTAL** | — | — | — | **$328.03** |
-
-*Important Assumption:* `ord_1006` uses decimal dollar-style values while the other orders use integer smallest-unit values. For this analysis, `53.62` is interpreted as **$53.62**, but this must be confirmed with the API owner before production financial reporting. If naively interpreted as integer cents, the total would drop to **$274.95** (a **$53.08** variance).
+1. **Undocumented Order Status:** `orders_page1.json` contains `ord_1003` with `status = "refunded"`. Documented statuses: `pending`, `shipped`, `delivered`, `cancelled`.  
+   *Impact: High.* Clients validating enums may reject the record or fail refund workflows.
+2. **Customer Email Nullability:** `orders_page2.json` contains `ord_1005` with `customer.email = null` (`customer.name = "Guest"`). Documentation states `customer.email` is always present.  
+   *Impact: High.* Clients expecting non-null email strings may fail validation or require null handling.
+3. **Inconsistent Monetary Representation (Most Serious Issue):** `orders_page2.json` contains `ord_1006` with decimal dollar values (`subtotal: 44.0`, `tax: 3.63`, `shipping: 5.99`, `total: 53.62`), whereas other orders use integer cents (`ord_1001 total: 5470`).  
+   *Impact: High.* Mixing decimal dollars and integer cents can contribute to revenue reconciliation differences.
+4. **Pagination Inconsistency:** The documentation says `has_more` determines whether another page should be requested. `orders_page1.json` returns `has_more = false` with populated `next_cursor` (`cur_8f2a19bd`).  
+   *Impact: Medium.* Clients following `has_more` stop pagination after page 1, missing subsequent orders.
+5. **Non-Existent Order Returns HTTP 200:** Requesting non-existent `ord_9999` returns HTTP 200 OK with `{"order": null}`. Expected: HTTP 404 Not Found.  
+   *Impact: High.* Clients cannot rely on standard HTTP error status codes.
 
 ---
 
-### Task 3A — Reply to Priya (Reconciliation Team)
-Concise, professional stakeholder email explaining the root cause of the reconciliation difference, highlighting the other API anomalies, confirming the $328.03 total under the stated assumption, and recommending verification with the API team before financial sign-off.
+## Task 2 — Revenue Reconciliation
+
+Captured orders across both pages:
+
+| Order ID | Source File | Customer | Status | Subtotal | Tax | Shipping | Total | Format | USD |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **ord_1001** | `orders_page1.json` | Rina Okafor | shipped | 4500 | 371 | 599 | 5470 | Cents | $54.70 |
+| **ord_1002** | `orders_page1.json` | Tigist Abebe | delivered | 2200 | 181 | 0 | 2381 | Cents | $23.81 |
+| **ord_1003** | `orders_page1.json` | Johan Lindqvist | refunded | 8900 | 734 | 599 | 10233 | Cents | $102.33 |
+| **ord_1004** | `orders_page1.json` | Mateo Dela Cruz | shipped | 6200 | 511 | 599 | 6810 | Cents | $68.10 |
+| **ord_1005** | `orders_page2.json` | Guest | delivered | 1800 | 148 | 599 | 2547 | Cents | $25.47 |
+| **ord_1006** | `orders_page2.json` | Piotr Nowak | shipped | 44.0 | 3.63 | 5.99 | 53.62 | Dollars | $53.62 |
+| **TOTAL** | — | — | — | — | — | — | — | — | **$328.03** |
+
+*Assumption:* Total revenue is **$328.03** under the explicit assumption that `ord_1006`'s `53.62` represents **$53.62**, because the response uses decimal dollar values. Confirm with API owners before finalized reporting. If parsed as 53 cents, total is **$274.94** ($53.09 difference).
 
 ---
 
-### Task 3B — Engineering Bug Report
-Structured engineering bug report (ENG-8912) detailing the inconsistent monetary unit serialization in `ord_1006`, comparing actual versus expected JSON representations, and providing a targeted investigation recommendation for backend engineers.
+## Task 3A — Stakeholder Email to Priya
+
+**Subject:** Re: Orders API Revenue Reconciliation — Findings & Verified Figures
+
+Hi Priya,
+
+Thank you for reaching out. I reviewed the Orders API responses and identified the data issue contributing to the reconciliation difference.
+
+The discrepancy stems from inconsistent monetary representations: orders `ord_1001` through `ord_1005` return amounts in integer cents (e.g., `5470` = $54.70), while `ord_1006` returns values in decimal dollars (`total: 53.62` = $53.62).
+
+Under the assumption that `ord_1006` represents $53.62, the total revenue across all six orders is **$328.03**. If a system parsed `53.62` as 53 cents, the total would incorrectly calculate as **$274.94** ($53.09 difference).
+
+Additionally:
+- `ord_1003` has undocumented status `"refunded"`.
+- `ord_1005` contains `customer.email = null`.
+- `orders_page1.json` has `has_more = false` with populated `next_cursor`.
+- `ord_9999` returns HTTP 200 with `{"order": null}` instead of HTTP 404.
+
+I have documented the issue under TICKET-4502 and recommend confirming the intended convention with the API team before finalizing financial reports.
+
+Best regards,  
+Ankalaiah  
+Product Analyst Intern
 
 ---
 
-## 🛠️ Tech Stack
-- **Framework:** React 19 + TypeScript
-- **Bundler:** Vite 6
-- **Styling:** Tailwind CSS v4 (Clean, high-contrast, accessible light SaaS theme)
-- **Icons:** Lucide React
-- **Architecture:** Pure static client-side single-page application (zero backend dependencies, zero database requirements)
+## Task 3B — Engineering Bug Report
 
----
+- **Reference:** TICKET-4502
+- **Title:** Orders API returns monetary values in inconsistent units
+- **Component:** Orders API / Serialization
+- **Affected Order:** `ord_1006` in `orders_page2.json`
 
-## 🚀 How to Run Locally
+### Problem Summary
+`GET /v1/orders` returns monetary fields using inconsistent units. Orders `ord_1001`–`ord_1005` return integer cents; `ord_1006` returns decimal floating-point dollars.
 
-### 1. Prerequisites
-Ensure [Node.js](https://nodejs.org/) (version 18 or newer) is installed.
+### Evidence
+- `ord_1001` (orders_page1.json): `{"subtotal": 4500, "tax": 371, "shipping": 599, "total": 5470}`
+- `ord_1006` (orders_page2.json): `{"subtotal": 44.0, "tax": 3.63, "shipping": 5.99, "total": 53.62}`
 
-### 2. Installation
-```bash
-npm install
-```
+### Expected vs. Actual Behavior
+- **Expected:** All monetary fields should be returned as integers in the smallest currency unit. If the intended total for ord_1006 is $53.62, the API should return total: 5362, with the corresponding monetary fields represented consistently.
+- **Actual:** `ord_1006` returns decimal floating-point dollars.
 
-### 3. Start Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Impact
+Clients parsing monetary fields as integer cents could miscalculate ord_1006 as 53 cents, contributing to reconciliation discrepancies.
 
-### 4. Build Production Bundle
-```bash
-npm run build
-```
-The compiled, production-ready static assets will be output to the `dist/` directory.
-
----
-
-## 🌐 How to Deploy
-
-Because this application is a 100% static frontend with no backend dependencies, it can be deployed for free in under two minutes to any static hosting provider:
-
-### Deploy to Vercel
-1. Push your repository to GitHub.
-2. Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
-3. Import your GitHub repository.
-4. Framework Preset: **Vite**.
-5. Build Command: `npm run build`.
-6. Output Directory: `dist`.
-7. Click **Deploy**.
-
-### Deploy to Netlify
-1. Go to [netlify.com](https://netlify.com) and select **"Add new site" > "Import an existing project"**.
-2. Connect your Git provider and select the repo.
-3. Build command: `npm run build`.
-4. Publish directory: `dist`.
-5. Click **Deploy site**.
-*(Alternatively: drag and drop the built `dist` folder into Netlify Drop).*
-
-### Deploy to GitHub Pages
-1. In `vite.config.ts`, ensure `base: './'` or `base: '/<repo-name>/'` is specified.
-2. Build the project:
-   ```bash
-   npm run build
-   ```
-3. Deploy the `dist/` directory using GitHub Actions or the `gh-pages` package.
-
----
-
-## 📄 License
-MIT. Prepared by Ankalaiah for Product Analyst Intern Take-Home Evaluation.
+### Suggested Investigation
+Verify serialization logic for `ord_1006` so all endpoints format monetary values as integers in the smallest currency unit.

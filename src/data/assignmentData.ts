@@ -31,7 +31,7 @@ export const FINDINGS: Finding[] = [
     category: "Contract & Nullability",
     documented: "customer.email is always present and non-null.",
     actual: "orders_page2.json contains ord_1005 with customer.email = null and customer.name = 'Guest'.",
-    impact: "High. Applications assuming email is always a string may fail when processing this order.",
+    impact: "High. Client systems expecting a non-null email string may fail validation or require additional null handling.",
     severity: "High",
     affectedFile: "orders_page2.json",
     codeSnippet: {
@@ -59,27 +59,27 @@ export const FINDINGS: Finding[] = [
     title: "Pagination inconsistency",
     category: "API Pagination & Cursor",
     documented: "has_more determines whether another page should be requested.",
-    actual: "orders_page1.json contains has_more = false together with next_cursor = 'cur_8f2a19bd'.",
-    impact: "Medium. A client following has_more would stop and could miss additional orders.",
+    actual: "The documentation says has_more determines whether another page should be requested. The response has has_more=false while next_cursor is populated, so the relationship between these fields should be clarified.",
+    impact: "Medium. A client following has_more would stop pagination, so the relationship between these fields should be clarified.",
     severity: "Medium",
     affectedFile: "orders_page1.json",
     codeSnippet: {
-      expected: `// Expected: if next_cursor is present, has_more should be true\n{\n  "has_more": true,\n  "next_cursor": "cur_8f2a19bd"\n}`,
-      actual: `// orders_page1.json\n{\n  "has_more": false, // ⚠️ Inconsistent with populated next_cursor\n  "next_cursor": "cur_8f2a19bd"\n}`
+      expected: `// Documented Behavior\n// has_more determines whether another page should be requested.`,
+      actual: `// orders_page1.json\n{\n  "has_more": false,\n  "next_cursor": "cur_8f2a19bd"\n}`
     }
   },
   {
     id: 5,
     title: "Non-existent order returns HTTP 200",
     category: "HTTP Status & Error Handling",
-    documented: "GET /v1/orders/{id} returns HTTP 404 if the order does not exist.",
+    documented: "Expected: HTTP 404 Not Found because the requested order does not exist.",
     actual: "order_ord_9999.json represents a request for a non-existent order and returns HTTP 200 with {\"order\": null}.",
     impact: "High. A client may interpret HTTP 200 as a successful lookup instead of a missing resource.",
     severity: "High",
     affectedFile: "order_ord_9999.json",
     codeSnippet: {
-      expected: `// Documented Response\nHTTP/1.1 404 Not Found\n{\n  "error": "Order not found",\n  "code": "resource_missing"\n}`,
-      actual: `// Actual Response (order_ord_9999.json)\nHTTP/1.1 200 OK\n{\n  "order": null // ⚠️ 200 OK masking a missing resource\n}`
+      expected: `HTTP/1.1 404 Not Found\n// Expected: HTTP 404 Not Found because the requested order does not exist.`,
+      actual: `// Actual Response (order_ord_9999.json)\nHTTP/1.1 200 OK\n{\n  "order": null\n}`
     }
   },
 ];
@@ -87,77 +87,77 @@ export const FINDINGS: Finding[] = [
 export const MOST_SERIOUS_ISSUE = {
   title: "Most Serious Issue: Inconsistent Monetary-Unit Format in ord_1006",
   description:
-    "The inconsistent monetary-unit format in ord_1006 is the most serious issue because it directly affects financial calculations, ledger integrity, and revenue reconciliation. If a downstream service expects integer cents, it could interpret 53.62 as 53 cents or throw float precision rounding errors, leading to severe accounting errors.",
+    "The inconsistent monetary-unit format in ord_1006 is the most serious issue because it directly affects financial calculations and revenue reconciliation. If downstream systems expect integer cents as documented, treating 53.62 as 53 cents could cause calculation discrepancies and reporting errors.",
 };
 
 export const ORDERS_DATA: OrderRecord[] = [
   {
     id: "ord_1001",
     sourceFile: "orders_page1.json",
-    rawSubtotal: "4850",
-    rawTax: "400",
-    rawShipping: "220",
+    rawSubtotal: "4500",
+    rawTax: "371",
+    rawShipping: "599",
     rawTotal: "5470",
     rawUnitFormat: "Integer (cents)",
     calculatedTotalUSD: 54.70,
-    status: "delivered",
-    customerName: "Alice Miller",
-    customerEmail: "alice.miller@example.com",
+    status: "shipped",
+    customerName: "Rina Okafor",
+    customerEmail: "r.okafor@example.com",
     notes: "Follows documented integer cents format.",
   },
   {
     id: "ord_1002",
     sourceFile: "orders_page1.json",
-    rawSubtotal: "2050",
+    rawSubtotal: "2200",
     rawTax: "181",
-    rawShipping: "150",
+    rawShipping: "0",
     rawTotal: "2381",
     rawUnitFormat: "Integer (cents)",
     calculatedTotalUSD: 23.81,
     status: "delivered",
-    customerName: "Bob Vance",
-    customerEmail: "bob.vance@example.com",
+    customerName: "Tigist Abebe",
+    customerEmail: "t.abebe@example.com",
     notes: "Follows documented integer cents format.",
   },
   {
     id: "ord_1003",
     sourceFile: "orders_page1.json",
-    rawSubtotal: "9200",
-    rawTax: "753",
-    rawShipping: "280",
+    rawSubtotal: "8900",
+    rawTax: "734",
+    rawShipping: "599",
     rawTotal: "10233",
     rawUnitFormat: "Integer (cents)",
     calculatedTotalUSD: 102.33,
     status: "refunded",
-    customerName: "Carol Danvers",
-    customerEmail: "carol.d@example.com",
+    customerName: "Johan Lindqvist",
+    customerEmail: "j.lindqvist@example.com",
     notes: "⚠️ Status is 'refunded' (undocumented status value).",
     isSpecialCase: true,
   },
   {
     id: "ord_1004",
-    sourceFile: "orders_page2.json",
-    rawSubtotal: "6100",
-    rawTax: "460",
-    rawShipping: "250",
+    sourceFile: "orders_page1.json",
+    rawSubtotal: "6200",
+    rawTax: "511",
+    rawShipping: "599",
     rawTotal: "6810",
     rawUnitFormat: "Integer (cents)",
     calculatedTotalUSD: 68.10,
     status: "shipped",
-    customerName: "David Rose",
-    customerEmail: "david.rose@example.com",
+    customerName: "Mateo Dela Cruz",
+    customerEmail: "m.delacruz@example.com",
     notes: "Follows documented integer cents format.",
   },
   {
     id: "ord_1005",
     sourceFile: "orders_page2.json",
-    rawSubtotal: "2250",
-    rawTax: "197",
-    rawShipping: "100",
+    rawSubtotal: "1800",
+    rawTax: "148",
+    rawShipping: "599",
     rawTotal: "2547",
     rawUnitFormat: "Integer (cents)",
     calculatedTotalUSD: 25.47,
-    status: "pending",
+    status: "delivered",
     customerName: "Guest",
     customerEmail: null,
     notes: "⚠️ customer.email is null (violates non-nullable contract).",
@@ -172,9 +172,9 @@ export const ORDERS_DATA: OrderRecord[] = [
     rawTotal: "53.62",
     rawUnitFormat: "Decimal (dollars)",
     calculatedTotalUSD: 53.62,
-    status: "delivered",
-    customerName: "Frank Chen",
-    customerEmail: "frank.c@example.com",
+    status: "shipped",
+    customerName: "Piotr Nowak",
+    customerEmail: "p.nowak@example.com",
     notes: "🚨 Inconsistent unit format: decimal dollar value (53.62) instead of integer cents (5362).",
     isSpecialCase: true,
   },
@@ -185,15 +185,14 @@ export const TOTAL_REVENUE = 328.03;
 export const REVENUE_ASSUMPTION = {
   headline: "Important Reconciliation Assumption",
   detail:
-    "ord_1006 uses decimal dollar-style values while the other orders use integer smallest-unit values. For this analysis, interpret 53.62 as $53.62, but clearly state that this should be confirmed with the API owner before production financial reporting.",
+    "ord_1006 uses decimal dollar-style values while the other orders use integer smallest-unit values. For this analysis, interpret 53.62 as $53.62, but this assumption should be confirmed with the API owner before finalizing financial reports.",
   discrepancyRisk:
-    "If a system strictly parsed ord_1006 as smallest-unit integer (cents) or integer-truncated 53.62 to 53 cents, the calculated total would drop to $274.95 (a $53.08 deficit). Clarification with engineering is mandatory.",
+    "If ord_1006 were interpreted as 53 cents, the total would be $274.94, creating a $53.09 difference.",
 };
 
 export const PRIYA_EMAIL: StakeholderEmail = {
-  subject: "Re: Revenue reconciliation — TICKET-4502",
+  subject: "Re: Orders API Revenue Reconciliation — Findings & Verified Figures",
   recipientName: "Priya",
-  recipientEmail: "priya@meridian.internal",
   senderName: "Ankalaiah",
   senderRole: "Product Analyst Intern",
   ticketId: "TICKET-4502",
@@ -203,7 +202,7 @@ I found a data-format issue that can explain the reconciliation difference. Most
 
 There are also other API inconsistencies, including a refunded status that isn't documented and a missing customer email despite the documentation saying it is always present.
 
-Using the documented currency convention and interpreting ord_1006 as $53.62, the six captured orders total $328.03.
+Interpreting ord_1006's decimal value as $53.62, the six captured orders total $328.03.
 
 I recommend confirming the intended representation of ord_1006 before using the API data for financial reporting.
 
@@ -212,11 +211,10 @@ Ankalaiah`,
 };
 
 export const BUG_REPORT: BugReportData = {
-  ticketId: "ENG-8912",
+  ticketId: "TICKET-4502",
   title: "Orders API returns monetary values in inconsistent units",
   component: "Orders API / Serialization",
-  priority: "P1 - High",
-  problem: "GET /v1/orders returns monetary fields using two different formats.",
+  problem: "GET /v1/orders returns monetary fields using two different formats across orders.",
   affectedOrder: "ord_1006 in orders_page2.json",
   sourceFile: "orders_page2.json",
   actual: {
@@ -227,36 +225,37 @@ export const BUG_REPORT: BugReportData = {
     sampleOtherOrder: "ord_1001 total = 5470 (integer cents)",
   },
   expected: {
-    formatDescription: "All monetary fields should follow the documented format: integer values in the smallest currency unit.",
+    formatDescription:
+      "All monetary fields should be returned as integers in the smallest currency unit. If the intended total for ord_1006 is $53.62, the API should return total: 5362, with the corresponding monetary fields represented consistently.",
     sampleFormattedTotal: 5362,
   },
   suggestedInvestigation:
-    "Check the serialization/conversion logic for ord_1006 and ensure all monetary fields use the same currency-unit convention.",
+    "Check the serialization and conversion logic for ord_1006 and ensure all monetary fields consistently use the documented smallest-unit integer convention.",
 };
 
 export const CONCLUSION_RISKS = [
   {
-    title: "Financial Integrity & Reporting Discrepancies",
+    title: "Financial Calculations & Reporting Discrepancies",
     severity: "Critical",
     description:
-      "Decimal representation vs. integer cents in ord_1006 directly threatens automated reconciliation, invoice generation, and financial audits. A mismatch causes an immediate $53.08 calculation error.",
+      "Decimal representation vs. integer cents in ord_1006 may cause reconciliation discrepancies and reporting variances in downstream financial systems.",
   },
   {
-    title: "Silent Client-Side System Failures",
+    title: "Client-Side Parsing & Validation Issues",
     severity: "High",
     description:
-      "Undocumented enum values (status: 'refunded') and null email values (ord_1005) trigger unhandled exceptions in strictly-typed downstream consumers (e.g. TypeScript, Kotlin, Java, Go).",
+      "Undocumented enum values (status: 'refunded') and null email fields (ord_1005) could cause parsing errors or unexpected behavior in clients expecting the documented schema.",
   },
   {
-    title: "Data Truncation via Flawed Pagination Logic",
+    title: "Data Truncation via Pagination Logic",
     severity: "Medium",
     description:
-      "Conflicting signals in page 1 (has_more: false alongside next_cursor: 'cur_8f2a19bd') cause ETL ingestion pipelines to prematurely terminate, stranding orders on subsequent pages.",
+      "Conflicting pagination signals (has_more: false alongside next_cursor: 'cur_8f2a19bd') could cause clients following has_more to stop pagination prematurely and miss subsequent orders.",
   },
   {
-    title: "False Success Masking Missing Resources",
+    title: "Ambiguous Response on Non-Existent Resources",
     severity: "High",
     description:
-      "Returning HTTP 200 with {'order': null} on non-existent records violates standard REST semantics (HTTP 404), causing client cache corruption and potential null-pointer crashes.",
+      "Returning HTTP 200 with {'order': null} instead of HTTP 404 could cause clients to misinterpret a missing resource as a successful query.",
   },
 ];

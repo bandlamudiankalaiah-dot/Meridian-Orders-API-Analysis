@@ -103,10 +103,10 @@ export const ExecutiveSummary: React.FC = () => {
             </div>
             <div className="shrink-0 lg:text-right border-t lg:border-t-0 lg:border-l border-rose-200 pt-3 lg:pt-0 lg:pl-6">
               <span className="text-xs uppercase font-semibold text-rose-800 tracking-wider block mb-0.5">
-                Financial Variance Risk
+                Financial Variance
               </span>
-              <span className="text-2xl font-mono font-extrabold text-rose-700">$53.08 error</span>
-              <span className="text-xs text-rose-600 block mt-0.5">if parsed as integer cents</span>
+              <span className="text-2xl font-mono font-extrabold text-rose-700">$53.09 difference</span>
+              <span className="text-xs text-rose-600 block mt-0.5">if parsed as 53 cents</span>
             </div>
           </div>
         </div>

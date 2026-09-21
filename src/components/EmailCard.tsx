@@ -114,7 +114,7 @@ ${PRIYA_EMAIL.body}`;
               </span>
               <div className="flex items-center gap-2 text-slate-800">
                 <span className="font-semibold">{PRIYA_EMAIL.recipientName}</span>
-                <span className="text-xs text-slate-500">&lt;{PRIYA_EMAIL.recipientEmail}&gt;</span>
+                <span className="text-xs text-slate-500">(Reconciliation Team)</span>
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@ ${PRIYA_EMAIL.body}`;
             </p>
 
             <p>
-              Using the documented currency convention and interpreting <code className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-xs">ord_1006</code> as <strong className="text-slate-900 font-semibold">$53.62</strong>, the six captured orders total <strong className="text-emerald-700 font-mono font-bold">$328.03</strong>.
+              Interpreting <code className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-xs">ord_1006</code>'s decimal value as <strong className="text-slate-900 font-semibold">$53.62</strong>, the six captured orders total <strong className="text-emerald-700 font-mono font-bold">$328.03</strong>.
             </p>
 
             <p className="p-3.5 rounded-lg bg-amber-50/70 border border-amber-200/80 text-amber-950 font-medium text-xs sm:text-sm">
@@ -153,7 +153,7 @@ ${PRIYA_EMAIL.body}`;
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-slate-700">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                Root cause identified
+                Data issue contributing to difference identified
               </span>
               <span className="flex items-center gap-1 text-slate-700">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />

@@ -9,15 +9,14 @@ import {
   CheckCircle2, 
   Wrench, 
   Tag, 
-  GitPullRequest,
-  Flame
+  GitPullRequest
 } from 'lucide-react';
 
 export const BugReportCard: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const copyMarkdown = () => {
-    const md = `### [${BUG_REPORT.priority}] ${BUG_REPORT.title}
+    const md = `### ${BUG_REPORT.title}
 
 **Component:** ${BUG_REPORT.component}
 **Affected Order:** \`${BUG_REPORT.affectedOrder}\`
@@ -41,13 +40,6 @@ ${BUG_REPORT.problem}
 
 #### Expected Result
 ${BUG_REPORT.expected.formatDescription}
-
-For $53.62, the API should return:
-\`\`\`json
-{
-  "total": ${BUG_REPORT.expected.sampleFormattedTotal}
-}
-\`\`\`
 
 #### Suggested Investigation
 ${BUG_REPORT.suggestedInvestigation}`;
@@ -111,12 +103,6 @@ ${BUG_REPORT.suggestedInvestigation}`;
                 <span className="text-slate-500">•</span>
                 <span className="text-xs font-semibold text-slate-400">
                   {BUG_REPORT.component}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                  <Flame className="w-3 h-3 text-rose-400" />
-                  {BUG_REPORT.priority}
                 </span>
               </div>
             </div>
@@ -216,7 +202,7 @@ ${BUG_REPORT.suggestedInvestigation}`;
                 {BUG_REPORT.suggestedInvestigation}
               </p>
               <p className="text-xs text-slate-600 pt-1">
-                Specifically check whether ord_1006 was processed by a legacy payment gateway adapter that converted cents to floats prior to serialization.
+                Verify the response serialization logic for ord_1006 to ensure all order endpoints consistently format monetary values as integers in the smallest currency unit.
               </p>
             </div>
           </div>

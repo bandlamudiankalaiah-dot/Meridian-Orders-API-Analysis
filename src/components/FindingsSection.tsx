@@ -133,9 +133,6 @@ export const FindingsSection: React.FC = () => {
                 <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
                   Core Evaluation Finding
                 </span>
-                <span className="text-xs px-2 py-0.2 rounded bg-rose-950 text-rose-200 border border-rose-800">
-                  P1 Priority
-                </span>
               </div>
               <h4 className="text-base sm:text-lg font-bold text-white">
                 Most Serious Issue: Inconsistent Monetary Format (ord_1006)

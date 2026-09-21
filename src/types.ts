@@ -50,14 +50,12 @@ export interface BugReportData {
     sampleFormattedTotal: number;
   };
   suggestedInvestigation: string;
-  priority: 'P1 - High' | 'P2 - Medium' | 'P3 - Low';
   component: string;
 }
 
 export interface StakeholderEmail {
   subject: string;
   recipientName: string;
-  recipientEmail: string;
   senderName: string;
   senderRole: string;
   ticketId: string;
